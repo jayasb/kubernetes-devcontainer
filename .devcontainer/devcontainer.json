@@ -1,0 +1,102 @@
+{
+  "name": "Full-Stack Kubernetes Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": "false",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/rio/features/k3d:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11",
+      "installTools": true,
+      "installPip": true,
+      "installPipx": true
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20",
+      "nodeGypDependencies": true,
+      "installYarnUsingApt": true
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": true
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "configureZshAsDefaultShell": true,
+      "username": "vscode",
+      "upgradePackages": true
+    }
+  },
+
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+
+  "postCreateCommand": "curl -LO \"https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl\" && chmod +x kubectl && sudo mv kubectl /usr/local/bin/ && pip install --upgrade pip && npm install -g yarn pnpm && sleep 10 && k3d cluster create dev-cluster --wait --timeout 300s && k3d kubeconfig merge dev-cluster --kubeconfig-merge-default",
+  
+  "forwardPorts": [3000, 3001, 8080, 9090],
+  
+  "portsAttributes": {
+    "3000": {
+      "label": "React/Next.js Dev Server",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "Alternative Dev Server",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Application",
+      "onAutoForward": "notify"
+    },
+    "9090": {
+      "label": "Prometheus",
+      "onAutoForward": "ignore"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+        "ms-vscode.vscode-json",
+        "ms-vscode.vscode-yaml",
+        "redhat.vscode-yaml",
+        "ms-python.python",
+        "ms-python.flake8",
+        "ms-python.black-formatter",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.organizeImports": true
+        },
+        "files.associations": {
+          "*.yaml": "yaml",
+          "*.yml": "yaml"
+        }
+      }
+    }
+  },
+
+  "containerEnv": {
+    "KUBECONFIG": "/home/vscode/.kube/config",
+    "PYTHONPATH": "/workspaces",
+    "NODE_ENV": "development"
+  },
+
+  "remoteUser": "vscode"
+}
